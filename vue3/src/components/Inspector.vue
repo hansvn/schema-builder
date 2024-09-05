@@ -6,6 +6,18 @@
         <div v-if="currentType === TABLE" class="jtk-inspector jtk-node-inspector">
             <div>Name</div>
             <input type="text" jtk-att="name" jtk-focus="true"/>
+
+            <div ref="columnTables">
+                <div
+                    v-for="column in currentObject.data.columns"
+                    :key="column.id"
+                    :column="column"
+                    style="display: flex; gap: 3px"
+                >
+                    <div class="handle" style="cursor: move;">*</div>
+                    <div class="name">{{ column.name }}</div>
+                </div>
+            </div>
         </div>
 
         <div v-if="currentType === VIEW" class="jtk-inspector jtk-node-inspector">
@@ -35,6 +47,7 @@
     </div>
 </template>
 <script>
+    import { useSortable } from "@vueuse/integrations/useSortable";
 
     import { nextTick } from "vue"
     import {loadSurface} from "@jsplumbtoolkit/browser-ui-vue3";
@@ -47,6 +60,7 @@
         data:() => {
             return {
                 currentType:'',
+                currentObject: null,
                 inspector:null,
                 TABLE,
                 VIEW,
@@ -76,8 +90,29 @@
                         this.currentType = ''
                     },
                     refresh:(obj, cb) => {
-                        this.currentType = isNode(obj) ? obj.data.type : isPort(obj) ? COLUMN : RELATIONSHIP
-                        nextTick(cb)
+                        this.currentType = isNode(obj) ? obj.data.type : isPort(obj) ? COLUMN : RELATIONSHIP;
+                        this.currentObject = obj;
+
+                        // reset previous sortable instance
+                        if (this.sortable) {
+                            this.sortable.stop();
+                            this.sortable = null;
+                        }
+
+                        if (this.currentObject?.data?.type === TABLE) {
+                            this.$nextTick(() => {
+                                // using nextTick to make sure $refs is updated with columnTables
+                                this.sortable = useSortable(
+                                    this.$refs.columnTables,
+                                    this.currentObject.data.columns,
+                                    {
+                                        handle: ".handle",
+                                        animation: 200,
+                                    }
+                                );
+                            });
+                        }
+                        nextTick(cb);
                     }
                 })
 

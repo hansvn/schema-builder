@@ -9,7 +9,9 @@
     },
     "dependencies": {
         "vue": "^3.3.4",
-        "@jsplumbtoolkit/browser-ui-vue3": "^6.60.0"
+        "@jsplumbtoolkit/browser-ui-vue3": "^6.60.0",
+        "@vueuse/integrations": "^11.0.3",
+        "sortablejs": "^1.15.3"
     },
     "devDependencies": {
         "@vitejs/plugin-vue": "^4.2.3",
